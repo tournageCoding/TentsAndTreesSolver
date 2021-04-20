@@ -11,64 +11,61 @@ public class Tent {
     private Point[] trees;
 
     /*
-     * Read the game input into a 2D array and the tent counts for rows
-     * and columns into separate arrays.
+     * Read the game input into a 2D array and the tent counts for rows and columns
+     * into separate arrays.
      */
-    public boolean readInput(String puzzle) {
-        Scanner scan = new Scanner(puzzle);
+    public void readInput() {
+        Scanner scan = new Scanner(System.in);
         String[] rowTemp, columnTemp;
         Stack<String> stack = new Stack<String>();
-        
+
         while (scan.hasNextLine()) {
             stack.push(scan.nextLine());
         }
         scan.close();
 
-        //send input to tentColumn
-        //System.out.println(stack.peek());
+        // send input to tentColumn
         columnTemp = stack.pop().split(" ");
-        this.tentColumn = new int[columnTemp.length];       
+        this.tentColumn = new int[columnTemp.length];
         for (int i = 0; i < columnTemp.length; i++) {
             if (this.isNumeric(columnTemp[i])) {
                 this.tentColumn[i] = Integer.parseInt(columnTemp[i]);
             } else {
-                System.out.println("Bad format");
-                return false;
+                System.out.println("Bad input format");
+                return;
             }
         }
 
-        //send input to tentRow
+        // send input to tentRow
         rowTemp = stack.pop().split(" ");
         this.tentRow = new int[rowTemp.length];
         for (int i = 0; i < rowTemp.length; i++) {
             if (this.isNumeric(rowTemp[i])) {
-                this.tentRow[i] =
-                    Integer.parseInt(rowTemp[rowTemp.length - 1 - i]);
+                this.tentRow[i] = Integer.parseInt(rowTemp[rowTemp.length - 1 - i]);
             } else {
-                System.out.println("Bad format");
-                return false;
+                System.out.println("Bad input format");
+                return;
             }
             this.tentRow[i] = Integer.parseInt(rowTemp[rowTemp.length - 1 - i]);
-            //flipped since input is given from bottom to top
+            // flipped since input is given from bottom to top
         }
-        
-        //send input to game
+
+        // send input to game
         this.game = new char[tentColumn.length][tentRow.length];
-        for (int i = tentRow.length - 1; i >= 0; i--) {            
+        for (int y = tentRow.length - 1; y >= 0; y--) {
             String currentRow = stack.pop();
-            for (int j = 0; j < tentColumn.length; j++) {
-                this.game[j][i] = currentRow.charAt(j);
+            for (int x = 0; x < tentColumn.length; x++) {
+                this.game[x][y] = currentRow.charAt(x);
             }
         }
-        return true;
     }
 
     /*
-     * Check if the puzzle is sovled by comparing the number of tents in each row and
-     * column to the required number.
+     * Check if the puzzle is sovled by comparing the number of tents in each row
+     * and column to the required number.
      */
     private boolean isSolved() {
-        //check rows
+        // check rows
         for (int y = 0; y < this.tentRow.length; y++) {
             int numTents = 0;
             for (int x = 0; x < this.tentColumn.length; x++) {
@@ -80,7 +77,7 @@ public class Tent {
                 return false;
             }
         }
-        //check columns
+        // check columns
         for (int x = 0; x < this.tentColumn.length; x++) {
             int numTents = 0;
             for (int y = 0; y < this.tentRow.length; y++) {
@@ -112,65 +109,61 @@ public class Tent {
     }
 
     /*
-     * Solves recursively by assigning a campsite to each tree and checks
-     * multiple possibilities without violating rules.
+     * Solves recursively by assigning a campsite to each tree and checks multiple
+     * possibilities without violating rules.
      */
     private int recursiveSolver(int tCounter) {
         if (tCounter == this.numTrees) {
             return tCounter;
         }
-        
+
         int x = this.trees[tCounter].getX();
         int y = this.trees[tCounter].getY();
 
-        if (y > 0 && this.game[x][y-1] == '.') {
-            this.game[x][y-1] = 'C';
-            if (this.tentDoesNotExceedCount(x, y-1)
-                && this.tentNotAdjacentToOtherTent(x, y-1)){
+        if (y > 0 && this.game[x][y - 1] == '.') {
+            this.game[x][y - 1] = 'C';
+            if (this.tentDoesNotExceedCount(x, y - 1) && this.tentNotAdjacentToOtherTent(x, y - 1)) {
                 int result = this.recursiveSolver(tCounter + 1);
                 if (result == this.numTrees) {
                     return result;
                 }
             }
-            this.game[x][y-1] = '.';
+            this.game[x][y - 1] = '.';
         }
 
-        if (x < this.tentColumn.length - 1 && this.game[x+1][y] == '.') {
-            this.game[x+1][y] = 'C';
-            if (this.tentDoesNotExceedCount(x+1, y)
-                && this.tentNotAdjacentToOtherTent(x+1, y)){
+        if (x < this.tentColumn.length - 1 && this.game[x + 1][y] == '.') {
+            this.game[x + 1][y] = 'C';
+            if (this.tentDoesNotExceedCount(x + 1, y) && this.tentNotAdjacentToOtherTent(x + 1, y)) {
                 int result = this.recursiveSolver(tCounter + 1);
                 if (result == this.numTrees) {
                     return result;
                 }
             }
-            this.game[x+1][y] = '.';
+            this.game[x + 1][y] = '.';
         }
 
-        if (y < this.tentRow.length - 1 && this.game[x][y+1] == '.') {
-            this.game[x][y+1] = 'C';
-            if (this.tentDoesNotExceedCount(x, y+1)
-                && this.tentNotAdjacentToOtherTent(x, y+1)){
+        if (y < this.tentRow.length - 1 && this.game[x][y + 1] == '.') {
+            this.game[x][y + 1] = 'C';
+            if (this.tentDoesNotExceedCount(x, y + 1) && this.tentNotAdjacentToOtherTent(x, y + 1)) {
                 int result = this.recursiveSolver(tCounter + 1);
                 if (result == this.numTrees) {
                     return result;
                 }
             }
-            this.game[x][y+1] = '.';
+            this.game[x][y + 1] = '.';
         }
 
-        if (x > 0 && this.game[x-1][y] == '.') {
-            this.game[x-1][y] = 'C';
-            if (this.tentDoesNotExceedCount(x-1, y)
-                && this.tentNotAdjacentToOtherTent(x-1, y)){
+        if (x > 0 && this.game[x - 1][y] == '.') {
+            this.game[x - 1][y] = 'C';
+            if (this.tentDoesNotExceedCount(x - 1, y) && this.tentNotAdjacentToOtherTent(x - 1, y)) {
                 int result = this.recursiveSolver(tCounter + 1);
                 if (result == this.numTrees) {
                     return result;
                 }
             }
-            this.game[x-1][y] = '.';
+            this.game[x - 1][y] = '.';
         }
-        
+
         return -1;
     }
 
@@ -189,7 +182,7 @@ public class Tent {
         if (tentCountColumn > this.tentColumn[x]) {
             return false;
         }
-        
+
         for (int i = 0; i < this.tentColumn.length; i++) {
             if (this.game[i][y] == 'C') {
                 tentCountRow++;
@@ -198,7 +191,7 @@ public class Tent {
         if (tentCountRow > this.tentRow[y]) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -210,32 +203,32 @@ public class Tent {
         boolean right = x < this.tentColumn.length - 1;
         boolean down = y < this.tentRow.length - 1;
         boolean left = x > 0;
-        
-        if (up && this.game[x][y-1] == 'C') {
+
+        if (up && this.game[x][y - 1] == 'C') {
             return false;
         }
-        if (right && this.game[x+1][y] == 'C') {
+        if (right && this.game[x + 1][y] == 'C') {
             return false;
         }
-        if (down && this.game[x][y+1] == 'C') {
+        if (down && this.game[x][y + 1] == 'C') {
             return false;
         }
-        if (left && this.game[x-1][y] == 'C') {
+        if (left && this.game[x - 1][y] == 'C') {
             return false;
         }
-        if (up && right && this.game[x+1][y-1] == 'C') {
+        if (up && right && this.game[x + 1][y - 1] == 'C') {
             return false;
         }
-        if (down && right && this.game[x+1][y+1] == 'C') {
+        if (down && right && this.game[x + 1][y + 1] == 'C') {
             return false;
         }
-        if (down && left && this.game[x-1][y+1] == 'C') {
+        if (down && left && this.game[x - 1][y + 1] == 'C') {
             return false;
         }
-        if (up && left && this.game[x-1][y-1] == 'C') {
+        if (up && left && this.game[x - 1][y - 1] == 'C') {
             return false;
         }
-        
+
         return true;
     }
 
