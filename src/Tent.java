@@ -2,7 +2,7 @@ import java.util.*;
 
 /*
  * A class to represent one game of Tents And Trees.
- * Key: 'C'-Campsite 'T'-Tree '.'-Grass
+ * Key: 'C'-Campsite 'T'-Tree '.'-Empty space
  */
 
 public class Tent {
