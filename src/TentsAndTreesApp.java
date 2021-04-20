@@ -8,9 +8,9 @@ import java.util.Scanner;
 public class TentsAndTreesApp {
     public static void main(String[] args) {
         Tent t = new Tent();
-        t.readInput();
-        t.solve();
-        t.printGame();
-
+        if (t.readInput()) {
+            t.solve();
+            t.printGame();
+        }
     }
 }

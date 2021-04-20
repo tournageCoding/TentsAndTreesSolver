@@ -2,62 +2,72 @@ import java.util.*;
 
 /*
  * A class to represent one game of Tents And Trees.
+ * Key: 'C'-Campsite 'T'-Tree '.'-Grass
  */
 
 public class Tent {
     private char[][] game;
-    private int[] tentRow, tentColumn;
+    private int[] rowTentsRequired, columnTentsRequired;
     private int numTrees;
     private Point[] trees;
 
     /*
-     * Read the game input into a 2D array and the tent counts for rows and columns
-     * into separate arrays.
+     * Read the game input into a 2D array and the required tent counts for rows and
+     * columns into separate arrays.
      */
-    public void readInput() {
+    public boolean readInput() {
         Scanner scan = new Scanner(System.in);
         String[] rowTemp, columnTemp;
-        Stack<String> stack = new Stack<String>();
+        Stack<String> inputStack = new Stack<String>();
 
         while (scan.hasNextLine()) {
-            stack.push(scan.nextLine());
+            inputStack.push(scan.nextLine());
         }
         scan.close();
 
-        // send input to tentColumn
-        columnTemp = stack.pop().split(" ");
-        this.tentColumn = new int[columnTemp.length];
+        // send input to columnTentsRequired
+        columnTemp = inputStack.pop().split(" ");
+        this.columnTentsRequired = new int[columnTemp.length];
         for (int i = 0; i < columnTemp.length; i++) {
             if (this.isNumeric(columnTemp[i])) {
-                this.tentColumn[i] = Integer.parseInt(columnTemp[i]);
+                this.columnTentsRequired[i] = Integer.parseInt(columnTemp[i]);
             } else {
-                System.out.println("Bad input format");
-                return;
+                System.out.println("Error: Number of tents required in a column must be a digit.");
+                return false;
             }
         }
 
-        // send input to tentRow
-        rowTemp = stack.pop().split(" ");
-        this.tentRow = new int[rowTemp.length];
+        // send input to rowTentsRequired
+        rowTemp = inputStack.pop().split(" ");
+        this.rowTentsRequired = new int[rowTemp.length];
         for (int i = 0; i < rowTemp.length; i++) {
             if (this.isNumeric(rowTemp[i])) {
-                this.tentRow[i] = Integer.parseInt(rowTemp[rowTemp.length - 1 - i]);
+                this.rowTentsRequired[i] = Integer.parseInt(rowTemp[rowTemp.length - 1 - i]);
             } else {
-                System.out.println("Bad input format");
-                return;
+                System.out.println("Error: Number of tents required in a row must be a digit.");
+                return false;
             }
-            this.tentRow[i] = Integer.parseInt(rowTemp[rowTemp.length - 1 - i]);
-            // flipped since input is given from bottom to top
+            // flipped since number of tents required in a row is given from bottom to top
+            this.rowTentsRequired[i] = Integer.parseInt(rowTemp[rowTemp.length - 1 - i]);
         }
 
         // send input to game
-        this.game = new char[tentColumn.length][tentRow.length];
-        for (int y = tentRow.length - 1; y >= 0; y--) {
-            String currentRow = stack.pop();
-            for (int x = 0; x < tentColumn.length; x++) {
+        this.game = new char[columnTentsRequired.length][rowTentsRequired.length];
+        for (int y = rowTentsRequired.length - 1; y >= 0; y--) {
+            String currentRow = inputStack.pop();
+            if (currentRow.length() != columnTentsRequired.length) {
+                System.out.println("Error: Must give a required number of tents for each column of the game.");
+                return false;
+            }
+            for (int x = 0; x < columnTentsRequired.length; x++) {
                 this.game[x][y] = currentRow.charAt(x);
             }
         }
+        if (!inputStack.isEmpty()) {
+            System.out.println("Error: Must give a required number of tents for each row of the game.");
+            return false;
+        }
+        return true;
     }
 
     /*
@@ -66,26 +76,27 @@ public class Tent {
      */
     private boolean isSolved() {
         // check rows
-        for (int y = 0; y < this.tentRow.length; y++) {
+        for (int y = 0; y < this.rowTentsRequired.length; y++) {
             int numTents = 0;
-            for (int x = 0; x < this.tentColumn.length; x++) {
+            for (int x = 0; x < this.columnTentsRequired.length; x++) {
                 if (this.game[x][y] == 'C') {
                     numTents++;
                 }
             }
-            if (numTents != this.tentRow[y]) {
+            if (numTents != this.rowTentsRequired[y]) {
                 return false;
             }
         }
+
         // check columns
-        for (int x = 0; x < this.tentColumn.length; x++) {
+        for (int x = 0; x < this.columnTentsRequired.length; x++) {
             int numTents = 0;
-            for (int y = 0; y < this.tentRow.length; y++) {
+            for (int y = 0; y < this.rowTentsRequired.length; y++) {
                 if (this.game[x][y] == 'C') {
                     numTents++;
                 }
             }
-            if (numTents != this.tentColumn[x]) {
+            if (numTents != this.columnTentsRequired[x]) {
                 return false;
             }
         }
@@ -93,15 +104,15 @@ public class Tent {
     }
 
     /*
-     * Print out a visual representation of the game.
+     * Print out a visual representation of the game if it is solved.
      */
     public void printGame() {
         if (!this.isSolved()) {
             System.out.println("No solution");
             return;
         }
-        for (int i = 0; i < this.tentRow.length; i++) {
-            for (int j = 0; j < this.tentColumn.length; j++) {
+        for (int i = 0; i < this.rowTentsRequired.length; i++) {
+            for (int j = 0; j < this.columnTentsRequired.length; j++) {
                 System.out.print(this.game[j][i]);
             }
             System.out.println();
@@ -131,7 +142,7 @@ public class Tent {
             this.game[x][y - 1] = '.';
         }
 
-        if (x < this.tentColumn.length - 1 && this.game[x + 1][y] == '.') {
+        if (x < this.columnTentsRequired.length - 1 && this.game[x + 1][y] == '.') {
             this.game[x + 1][y] = 'C';
             if (this.tentDoesNotExceedCount(x + 1, y) && this.tentNotAdjacentToOtherTent(x + 1, y)) {
                 int result = this.recursiveSolver(tCounter + 1);
@@ -142,7 +153,7 @@ public class Tent {
             this.game[x + 1][y] = '.';
         }
 
-        if (y < this.tentRow.length - 1 && this.game[x][y + 1] == '.') {
+        if (y < this.rowTentsRequired.length - 1 && this.game[x][y + 1] == '.') {
             this.game[x][y + 1] = 'C';
             if (this.tentDoesNotExceedCount(x, y + 1) && this.tentNotAdjacentToOtherTent(x, y + 1)) {
                 int result = this.recursiveSolver(tCounter + 1);
@@ -174,21 +185,21 @@ public class Tent {
     private boolean tentDoesNotExceedCount(int x, int y) {
         int tentCountColumn = 0;
         int tentCountRow = 0;
-        for (int i = 0; i < this.tentRow.length; i++) {
+        for (int i = 0; i < this.rowTentsRequired.length; i++) {
             if (this.game[x][i] == 'C') {
                 tentCountColumn++;
             }
         }
-        if (tentCountColumn > this.tentColumn[x]) {
+        if (tentCountColumn > this.columnTentsRequired[x]) {
             return false;
         }
 
-        for (int i = 0; i < this.tentColumn.length; i++) {
+        for (int i = 0; i < this.columnTentsRequired.length; i++) {
             if (this.game[i][y] == 'C') {
                 tentCountRow++;
             }
         }
-        if (tentCountRow > this.tentRow[y]) {
+        if (tentCountRow > this.rowTentsRequired[y]) {
             return false;
         }
 
@@ -200,8 +211,8 @@ public class Tent {
      */
     private boolean tentNotAdjacentToOtherTent(int x, int y) {
         boolean up = y > 0;
-        boolean right = x < this.tentColumn.length - 1;
-        boolean down = y < this.tentRow.length - 1;
+        boolean right = x < this.columnTentsRequired.length - 1;
+        boolean down = y < this.rowTentsRequired.length - 1;
         boolean left = x > 0;
 
         if (up && this.game[x][y - 1] == 'C') {
@@ -237,8 +248,8 @@ public class Tent {
      */
     private int countNumTrees() {
         int trees = 0;
-        for (int x = 0; x < this.tentColumn.length; x++) {
-            trees += this.tentColumn[x];
+        for (int x = 0; x < this.columnTentsRequired.length; x++) {
+            trees += this.columnTentsRequired[x];
         }
         return trees;
     }
@@ -249,8 +260,8 @@ public class Tent {
     private void initializeTreeArray() {
         int treeNum = 0;
         this.trees = new Point[this.numTrees];
-        for (int y = 0; y < this.tentRow.length; y++) {
-            for (int x = 0; x < this.tentColumn.length; x++) {
+        for (int y = 0; y < this.rowTentsRequired.length; y++) {
+            for (int x = 0; x < this.columnTentsRequired.length; x++) {
                 if (this.game[x][y] == 'T') {
                     this.trees[treeNum++] = new Point(x, y);
                 }
